@@ -69,22 +69,18 @@ type SectionProps = {
   id: string;
   number: string;
   label: string;
-  slides?: string;
   title: string;
   intro?: ReactNode;
   children: ReactNode;
 };
 
-/** Seção numerada: rótulo pequeno com o número e os slides, título e texto de abertura. */
-export function Section({ id, number, label, slides, title, intro, children }: SectionProps) {
+/** Seção numerada: rótulo pequeno com o número, título e texto de abertura. */
+export function Section({ id, number, label, title, intro, children }: SectionProps) {
   return (
     <section id={id} aria-labelledby={`${id}-titulo`} className="space-y-8 border-t border-ctp-surface-0 py-16">
       <header className="space-y-3">
-        <p className="flex flex-wrap items-baseline gap-x-3 font-mono text-xs text-ctp-meta">
-          <span>
-            <span className="text-ctp-accent">{number}</span> · {label}
-          </span>
-          {slides && <span>{slides}</span>}
+        <p className="font-mono text-xs text-ctp-meta">
+          <span className="text-ctp-accent">{number}</span> · {label}
         </p>
         <h2 id={`${id}-titulo`} className="text-2xl font-semibold tracking-tight text-ctp-text sm:text-3xl">
           {title}

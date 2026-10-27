@@ -22,7 +22,7 @@ type Props = { t: Track; copied: string | null; onCopy: (id: string, text: strin
 function Practice({ t, copied, onCopy }: Props) {
   const [done, setDone] = useState(readDone);
   const [open, setOpen] = useState<Record<string, boolean>>({});
-  const repoUrl = `https://${t.repo}`;
+  const repoUrl = t.pastaUrl;
   const count = t.steps.filter((_, i) => done[`${t.id}-${i}`]).length;
   const pct = Math.round((count / t.steps.length) * 100);
 
@@ -49,7 +49,7 @@ function Practice({ t, copied, onCopy }: Props) {
             rel="noreferrer"
             className="inline-flex items-center gap-1.5 truncate font-mono text-sm text-ctp-text underline decoration-ctp-surface-2 underline-offset-4 hover:decoration-ctp-accent"
           >
-            {t.repo}
+            {t.repo}/{t.pasta}
             <ExternalLink size={13} aria-hidden="true" />
           </a>
         </div>

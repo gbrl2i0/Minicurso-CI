@@ -14,6 +14,8 @@ export type Track = {
   wf: string;
   pasta: string;
   repo: string;
+  /** Pasta da trilha no repositório, para o link do GitHub. */
+  pastaUrl: string;
   check: string;
   run: Run;
   projetoIntro: string;
@@ -50,7 +52,7 @@ const NODE_FIX = `export function calcularPrecoFinal(
 }`;
 
 export function NODE(repo: string): Track { return {
-  id: 'node', wf: 'ci.yml', pasta: 'node', repo, check: 'test', run: NODE_RUN,
+  id: 'node', wf: 'ci.yml', pasta: 'node', repo, pastaUrl: `https://${repo}/tree/main/node`, check: 'test', run: NODE_RUN,
   projetoIntro: 'Uma API mínima: uma rota que chama uma função e devolve JSON, sem banco e sem login. O bug está na função de desconto, que não tem limite.',
   tree: `node/
 ├── .github/
@@ -180,7 +182,7 @@ Error: Process completed with exit code 1`,
         ['git push', 'Envia para o GitHub. O push na main já dispara o primeiro run.'],
       ] },
       { kind: 'wf' },
-    ], tela: 'A aba Actions mostra o run CI começando sozinho, e ele fica vermelho, porque o bug ainda está na main.', dicas: ['YAML só aceita espaços, dois por nível. Nada de tab.'] },
+    ], tela: 'A aba Actions mostra o run CI começando sozinho, e ele fica vermelho, porque o bug ainda está na main.', dicas: ['YAML só aceita espaços, dois por nível. Nada de tab.', 'O GitHub só roda workflows que estão em .github/workflows na raiz do repositório. Use o conteúdo da pasta como raiz do seu repositório (copie para um repositório novo ou fork); dentro de uma subpasta, o workflow não aparece na aba Actions.'] },
     { t: 'Abrir o PR e ver o check vermelho', parts: [
       { kind: 'cmds', lang: 'sh', items: [
         ['git switch -c fix/desconto', 'Cria uma branch nova para o PR.'],
@@ -215,7 +217,7 @@ Error: Process completed with exit code 1`,
 }; }
 
 export function PY(repo: string): Track { return {
-  id: 'py', wf: 'dados.yml', pasta: 'python', repo, check: 'validar', run: PY_RUN,
+  id: 'py', wf: 'dados.yml', pasta: 'python', repo, pastaUrl: `https://${repo}/tree/main/python`, check: 'validar', run: PY_RUN,
   projetoIntro: 'O código lê um CSV de cupons e aplica o desconto. Quem edita o CSV é o comercial, direto no navegador. O código está certo; o dado, não.',
   tree: `python/
 ├── .github/
@@ -327,7 +329,7 @@ Error: Process completed with exit code 1`,
       ] },
       { kind: 'wf' },
       { kind: 'clicks', items: ['Abra a aba Actions do repositório', 'Escolha o workflow Dados', 'Clique em Run workflow'] },
-    ], tela: 'Depois do push, nada roda: este workflow não escuta push. O Run workflow dispara o primeiro run, verde.', dicas: ['YAML só aceita espaços, dois por nível. Nada de tab.'] },
+    ], tela: 'Depois do push, nada roda: este workflow não escuta push. O Run workflow dispara o primeiro run, verde.', dicas: ['YAML só aceita espaços, dois por nível. Nada de tab.', 'O GitHub só roda workflows que estão em .github/workflows na raiz do repositório. Use o conteúdo da pasta como raiz do seu repositório (copie para um repositório novo ou fork); dentro de uma subpasta, o workflow não aparece na aba Actions.'] },
     { t: 'Editar o CSV no navegador e abrir o PR', parts: [
       { kind: 'clicks', items: ['No GitHub, abra dados/cupons.csv', 'Clique no lápis (Edit this file)', 'Cole a linha abaixo no fim do arquivo', 'Commit changes → Create a new branch', 'Propose changes → Create pull request'] },
       { kind: 'cmds', lang: 'csv', items: [['BLACK150,150,2026-11-28', 'Cupom de 150%: o erro proposital.']] },

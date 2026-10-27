@@ -144,7 +144,6 @@ function App() {
 
       <main id="conteudo" tabIndex={-1} className="mx-auto max-w-[52rem] px-5 outline-none sm:px-8">
         <section id="topo" className="space-y-6 py-14 sm:py-20">
-          <p className="font-mono text-xs text-ctp-meta">Minicurso · material de apoio</p>
           <h1 className="text-4xl font-semibold tracking-tight text-ctp-text sm:text-5xl">
             Integração Contínua com <span className="text-ctp-accent">GitHub Actions</span>
           </h1>
@@ -159,13 +158,6 @@ function App() {
               </a>
             ))}
           </p>
-          <ul className="flex flex-wrap gap-2 pt-1">
-            {['25 min conceito e demo', '10 min prática', '5 min perguntas'].map((item) => (
-              <li key={item} className="rounded-md border border-ctp-surface-1 px-2.5 py-1 font-mono text-xs text-ctp-subtext-1">
-                {item}
-              </li>
-            ))}
-          </ul>
         </section>
 
         <section aria-labelledby="trilha-titulo" className="space-y-5 pb-16">
@@ -207,7 +199,6 @@ function App() {
           id="conceito"
           number="01"
           label="conceito"
-          slides="slides 4 a 6"
           title="O que é Integração Contínua"
           intro="Validar automaticamente cada commit em um servidor limpo, antes que ele se torne problema de outra pessoa."
         >
@@ -233,7 +224,7 @@ function App() {
           </div>
         </Section>
 
-        <Section id="projeto" number="02" label="antes" slides="slides 3 e 7" title="O projeto sem CI" intro={t.projetoIntro}>
+        <Section id="projeto" number="02" label="antes" title="O projeto sem CI" intro={t.projetoIntro}>
           <div className="space-y-4">
             <CodeBlock name="estrutura" lang="tree" code={t.tree} />
             {t.files.map(([name, lang, code], i) => (
@@ -256,7 +247,7 @@ function App() {
           </div>
         </Section>
 
-        <Section id="testes" number="03" label="testes" slides="slides 8 e 9" title={t.testesTitulo} intro={t.testesIntro}>
+        <Section id="testes" number="03" label="testes" title={t.testesTitulo} intro={t.testesIntro}>
           <div className="space-y-4">
             {t.tests.map(([name, lang, code], i) => (
               <CodeBlock key={name} name={name} lang={lang} code={code} copy={{ id: `t${i}`, copied, onCopy: copy }} />
@@ -288,7 +279,6 @@ function App() {
           id="workflow"
           number="04"
           label="depois"
-          slides="slides 11 e 12"
           title="O pipeline inteiro, linha a linha"
           intro="Toque em qualquer linha para ver o que ela faz."
         >
@@ -300,7 +290,6 @@ function App() {
           id="roteiro"
           number="05"
           label="prática"
-          slides="slides 13 a 15"
           title="Roteiro passo a passo"
           intro="Marque cada passo quando terminar; o progresso fica salvo. Travou? Abra Mostrar como faz para ver o porquê de cada comando e o que deve aparecer na tela."
         >
@@ -320,7 +309,7 @@ function App() {
           </ul>
         </Section>
 
-        <Section id="alem" number="07" label="para ir além" slides="slides 16 e 17" title="O que mais cabe no pipeline">
+        <Section id="alem" number="07" label="para ir além" title="O que mais cabe no pipeline">
           <div className="space-y-3">
             <h3 className="font-mono text-xs text-ctp-meta">Outros steps no mesmo job</h3>
             <ul className="divide-y divide-ctp-surface-0 overflow-hidden rounded-xl border border-ctp-surface-0">
