@@ -9,6 +9,9 @@ Tailwind v4 + Catppuccin (Mocha no escuro, Latte creme no claro).
 - Duas trilhas (Node.js · API e Python · dados), salvas no navegador; `?trilha=python` abre direto na de Python.
 - Workflow linha a linha, simulação do check no PR, roteiro com progresso salvo e comandos para copiar.
 - Texto, código e roteiro ficam em `src/content.ts`.
+- O código da prática mora aqui mesmo, em `node/` (API Express + Vitest) e `python/` (CSV de cupons + pytest),
+  cada pasta com o próprio README. O GitHub só roda workflows na raiz do repositório: para o CI rodar de verdade,
+  o aluno usa o conteúdo da pasta como raiz do repositório dele.
 
 ## Rodando
 

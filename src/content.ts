@@ -35,7 +35,8 @@ export type Track = {
 };
 
 export const REPO_NODE = 'github.com/kessleru/Minicurso-CI';
-export const REPO_PY = 'github.com/kessleru/Minicurso-CI-python';
+// As duas trilhas moram no mesmo repositório: node/ e python/.
+export const REPO_PY = REPO_NODE;
 
 export const NODE_RUN: Run = [['Set up job', 2], ['actions/checkout@v4', 1], ['actions/setup-node@v4', 4], ['npm ci', 12], ['npx tsc --noEmit', 6], ['npm test', 13]];
 export const PY_RUN: Run = [['Set up job', 2], ['actions/checkout@v4', 1], ['actions/setup-python@v5', 3], ['pip install -r requirements.txt', 8], ['pytest -q', 5]];
@@ -49,9 +50,9 @@ const NODE_FIX = `export function calcularPrecoFinal(
 }`;
 
 export function NODE(repo: string): Track { return {
-  id: 'node', wf: 'ci.yml', pasta: 'api-desconto', repo, check: 'test', run: NODE_RUN,
+  id: 'node', wf: 'ci.yml', pasta: 'node', repo, check: 'test', run: NODE_RUN,
   projetoIntro: 'Uma API mínima: uma rota que chama uma função e devolve JSON, sem banco e sem login. O bug está na função de desconto, que não tem limite.',
-  tree: `api-desconto/
+  tree: `node/
 ├── .github/
 │   └── workflows/
 │       └── ci.yml
@@ -165,7 +166,7 @@ Error: Process completed with exit code 1`,
     { t: 'Clonar e ver o teste falhar', parts: [
       { kind: 'cmds', lang: 'sh', items: [
         [`git clone https://${repo}`, 'Baixa o repositório-base para a sua máquina.'],
-        ['cd api-desconto', 'Entra na pasta do projeto.'],
+        ['cd Minicurso-CI/node', 'Entra na pasta da trilha Node.js.'],
         ['npm install', 'Instala as dependências. Local pode ser install; no CI é npm ci.'],
         ['npm test', 'Roda o Vitest uma vez. O bug já está no código.'],
       ] },
@@ -214,9 +215,9 @@ Error: Process completed with exit code 1`,
 }; }
 
 export function PY(repo: string): Track { return {
-  id: 'py', wf: 'dados.yml', pasta: 'cupons-loja', repo, check: 'validar', run: PY_RUN,
+  id: 'py', wf: 'dados.yml', pasta: 'python', repo, check: 'validar', run: PY_RUN,
   projetoIntro: 'O código lê um CSV de cupons e aplica o desconto. Quem edita o CSV é o comercial, direto no navegador. O código está certo; o dado, não.',
-  tree: `cupons-loja/
+  tree: `python/
 ├── .github/
 │   └── workflows/
 │       └── dados.yml
@@ -309,7 +310,7 @@ Error: Process completed with exit code 1`,
     { t: 'Clonar e rodar o pytest local', parts: [
       { kind: 'cmds', lang: 'sh', items: [
         [`git clone https://${repo}`, 'Baixa o repositório-base para a sua máquina.'],
-        ['cd cupons-loja', 'Entra na pasta do projeto.'],
+        ['cd Minicurso-CI/python', 'Entra na pasta da trilha Python.'],
         ['python -m venv .venv', 'Cria um ambiente isolado para as dependências.'],
         ['source .venv/bin/activate', 'Ativa o ambiente. No Windows: .venv\\Scripts\\activate'],
         ['pip install -r requirements.txt', 'Instala o pytest.'],

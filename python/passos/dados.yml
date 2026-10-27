@@ -1,0 +1,26 @@
+# Nome que aparece na aba "Actions" do repositório.
+name: Dados
+
+# QUANDO este workflow roda: três gatilhos, e nenhum é push.
+on:
+  pull_request:
+    # só se o diff tocar em dados/ ou tests/: PR que muda o README não gasta runner
+    paths: ['dados/**', 'tests/**']
+  schedule:
+    # todo dia às 12:00 UTC (9h em Brasília); só roda na branch padrão
+    - cron: '0 12 * * *'
+  # cria o botão "Run workflow" na aba Actions
+  workflow_dispatch:
+
+jobs:
+  # "validar" é o id do job: o nome do check no PR e o que se exige na proteção da branch.
+  validar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      - run: pip install -r requirements.txt
+      - run: pytest -q
