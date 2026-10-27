@@ -152,7 +152,7 @@ function App() {
             </button>
           </div>
         </div>
-        <nav aria-label="Seções" className="mx-auto hidden max-w-[52rem] gap-6 overflow-x-auto px-5 text-sm sm:flex sm:px-8">
+        <nav aria-label="Seções" className="mx-auto hidden max-w-[52rem] gap-6 overflow-x-auto overflow-y-hidden px-5 text-sm [scrollbar-width:none] sm:flex sm:px-8">
           {NAV.map(([id, label]) => (
             <a
               key={id}
