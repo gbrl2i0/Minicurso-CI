@@ -124,23 +124,6 @@ function App() {
             minicurso<span className="text-ctp-accent">/ci</span>
           </a>
           <div className="flex items-center gap-3">
-            <div role="radiogroup" aria-label="Trilha" className="flex rounded-lg border border-ctp-surface-0 p-0.5 font-mono text-xs">
-              {tracks.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={track === item.id}
-                  onClick={() => setTrack(item.id)}
-                  className={cn(
-                    'cursor-pointer rounded-md px-2.5 py-1 transition-colors',
-                    track === item.id ? 'bg-ctp-accent/15 text-ctp-accent' : 'text-ctp-subtext-0 hover:text-ctp-text'
-                  )}
-                >
-                  {item.id === 'node' ? 'Node.js' : 'Python'}
-                </button>
-              ))}
-            </div>
             <button
               type="button"
               onClick={toggleTheme}
