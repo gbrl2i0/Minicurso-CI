@@ -47,23 +47,32 @@ const NODE_FIX = `export function calcularPrecoFinal(
   valor: number,
   descontoPercentual: number
 ): number {
-  const taxa = Math.min(descontoPercentual, 100) / 100;
-  return valor * (1 - taxa);
+  if (valor < 0) {
+    throw new Error("valor nao pode ser negativo");
+  }
+
+  if (descontoPercentual < 0 || descontoPercentual > 100) {
+    throw new Error("descontoPercentual deve estar entre 0 e 100");
+  }
+
+  const desconto = valor * (descontoPercentual / 100);
+  return valor - desconto;
 }`;
 
 export function NODE(repo: string): Track { return {
   id: 'node', wf: 'ci.yml', pasta: 'node', repo, pastaUrl: `https://${repo}/tree/main/node`, check: 'test', run: NODE_RUN,
   projetoIntro: 'Uma API mínima: uma rota que chama uma função e devolve JSON, sem banco e sem login. O bug está na função de desconto, que não tem limite.',
   tree: `node/
-├── .github/
-│   └── workflows/
-│       └── ci.yml
+├── passos/
+│   ├── test/
+│   └── lint/
 ├── src/
 │   ├── desconto.ts
 │   ├── desconto.test.ts
 │   ├── app.ts
 │   ├── app.test.ts
 │   └── server.ts
+├── eslint.config.js
 ├── tsconfig.json
 ├── package.json
 └── package-lock.json`,
@@ -72,21 +81,26 @@ export function NODE(repo: string): Track { return {
   valor: number,
   descontoPercentual: number
 ): number {
-  return valor - valor * (descontoPercentual / 100);
+  const desconto = valor * (descontoPercentual / 100);
+  return valor - desconto;
 }`],
-    ['src/app.ts', 'ts', `import express from 'express';
-import { calcularPrecoFinal } from './desconto';
+    ['src/app.ts', 'ts', `import express from "express";
+import { calcularPrecoFinal } from "./desconto.js";
 
 export const app = express();
 app.use(express.json());
 
-app.post('/calcular', (req, res) => {
+app.post("/calcular", (req, res) => {
   const { valor, descontoPercentual } = req.body;
-  res.json({
-    precoFinal: calcularPrecoFinal(valor, descontoPercentual),
-  });
+
+  try {
+    const precoFinal = calcularPrecoFinal(valor, descontoPercentual);
+    res.json({ precoFinal });
+  } catch (erro) {
+    res.status(400).json({ erro: (erro as Error).message });
+  }
 });`],
-    ['src/server.ts', 'ts', `import { app } from './app';
+    ['src/server.ts', 'ts', `import { app } from "./app.js";
 
 // separado do app.ts para o teste não precisar de porta
 app.listen(3000);`],
@@ -99,38 +113,57 @@ app.listen(3000);`],
   testesTitulo: 'Os testes que pegam o bug',
   testesIntro: 'Dois níveis. O de unidade testa só a função pura. O de integração bate na rota de verdade com o Supertest, que sobe o app em memória, sem ocupar porta.',
   tests: [
-    ['src/desconto.test.ts', 'ts', `import { describe, it, expect } from 'vitest';
-import { calcularPrecoFinal } from './desconto';
+    ['src/desconto.test.ts', 'ts', `import { describe, it, expect } from "vitest";
+import { calcularPrecoFinal } from "./desconto.js";
 
-describe('calcularPrecoFinal', () => {
-  it('aplica 10% sobre 200', () => {
-    expect(calcularPrecoFinal(200, 10)).toBe(180);
+describe("calcularPrecoFinal", () => {
+  it("aplica um desconto normal de 10%", () => {
+    expect(calcularPrecoFinal(100, 10)).toBe(90);
   });
-  it('aceita desconto zero', () => {
-    expect(calcularPrecoFinal(200, 0)).toBe(200);
+
+  it("com desconto de 0% devolve o valor original", () => {
+    expect(calcularPrecoFinal(100, 0)).toBe(100);
   });
-  it('nunca devolve negativo', () => {
-    expect(calcularPrecoFinal(100, 120)).toBe(0);
+
+  it("com desconto de 100% o produto sai de graca", () => {
+    expect(calcularPrecoFinal(100, 100)).toBe(0);
+  });
+
+  it("rejeita desconto acima de 100% em vez de devolver preco negativo", () => {
+    expect(() => calcularPrecoFinal(100, 120)).toThrow();
   });
 });`],
-    ['src/app.test.ts', 'ts', `import request from 'supertest';
-import { it, expect } from 'vitest';
-import { app } from './app';
+    ['src/app.test.ts', 'ts', `import { describe, it, expect } from "vitest";
+import request from "supertest";
+import { app } from "./app.js";
 
-it('POST /calcular sem negativo', async () => {
-  const res = await request(app)
-    .post('/calcular')
-    .send({ valor: 100, descontoPercentual: 120 });
-  expect(res.body.precoFinal).not.toBeLessThan(0);
+describe("POST /calcular", () => {
+  it("responde com o preco ja com o desconto aplicado", async () => {
+    const resposta = await request(app)
+      .post("/calcular")
+      .send({ valor: 100, descontoPercentual: 10 });
+
+    expect(resposta.status).toBe(200);
+    expect(resposta.body.precoFinal).toBe(90);
+  });
+
+  it("responde 400 quando o desconto passa de 100%", async () => {
+    const resposta = await request(app)
+      .post("/calcular")
+      .send({ valor: 100, descontoPercentual: 120 });
+
+    expect(resposta.status).toBe(400);
+  });
 });`],
   ],
   out: `$ npm test
- ✓ aplica 10% sobre 200
- ✓ aceita desconto zero
- ✗ nunca devolve negativo
- ✗ POST /calcular sem negativo
-   → expected -20 to be 0
- Tests  2 passed | 2 failed`,
+ ❯ src/desconto.test.ts (4 tests | 1 failed)
+   ✗ rejeita desconto acima de 100% em vez de devolver preco negativo
+     → expected [Function] to throw an error
+ ❯ src/app.test.ts (2 tests | 1 failed)
+   ✗ responde 400 quando o desconto passa de 100%
+     → expected 200 to be 400
+ Tests  2 failed | 4 passed (6)`,
   anatomia: [
     { k: 'describe', d: 'Agrupa casos relacionados. É o título que aparece no relatório do Vitest.' },
     { k: 'it', d: 'Um caso, com nome em português comum. O nome é a documentação da regra.' },
@@ -156,14 +189,17 @@ it('POST /calcular sem negativo', async () => {
     ['      - run: npm test', 'Roda unidade e integração. Exit code diferente de zero pinta o check de vermelho.'],
   ],
   logBug: `Run npm test
- ❯ src/desconto.test.ts (3)
-   ✗ nunca devolve negativo
-   AssertionError: expected -20 to be 0
+ ❯ src/desconto.test.ts (4 tests | 1 failed)
+   ✗ rejeita desconto acima de 100% em vez de devolver preco negativo
+   AssertionError: expected [Function] to throw an error
+ ❯ src/app.test.ts (2 tests | 1 failed)
+   ✗ responde 400 quando o desconto passa de 100%
+   AssertionError: expected 200 to be 400
 Error: Process completed with exit code 1`,
   logOk: `Run npm test
- ✓ src/desconto.test.ts (3)
- ✓ src/app.test.ts (1)
- Tests  4 passed`,
+ ✓ src/desconto.test.ts (4 tests)
+ ✓ src/app.test.ts (2 tests)
+ Tests  6 passed (6)`,
   steps: [
     { t: 'Clonar e ver o teste falhar', parts: [
       { kind: 'cmds', lang: 'sh', items: [
@@ -172,7 +208,7 @@ Error: Process completed with exit code 1`,
         ['npm install', 'Instala as dependências. Local pode ser install; no CI é npm ci.'],
         ['npm test', 'Roda o Vitest uma vez. O bug já está no código.'],
       ] },
-    ], tela: '2 passed | 2 failed. O preço negativo aparece antes de qualquer CI: o CI não inventa erro.', dicas: ['Precisa de Node 20 ou mais novo. Confira com node -v.'] },
+    ], tela: '2 failed | 4 passed. A função aceita 120% e a rota responde 200 em vez de 400: o bug aparece antes de qualquer CI, e o CI não inventa erro.', dicas: ['Precisa de Node 20 ou mais novo. Confira com node -v.'] },
     { t: 'Criar o ci.yml e commitar', parts: [
       { kind: 'cmds', lang: 'sh', items: [
         ['mkdir -p .github/workflows', 'Cria a pasta. O caminho precisa ser exatamente este, com o ponto.'],
@@ -191,7 +227,7 @@ Error: Process completed with exit code 1`,
         ['git push -u origin fix/desconto', 'Sobe a branch para o GitHub.'],
         ['gh pr create --fill', 'Abre o PR pela GitHub CLI, usando a mensagem do commit.'],
       ] },
-    ], tela: 'Check test em vermelho no PR. Clique em Details para ver o log com expected -20 to be 0.', dicas: ['Sem a GitHub CLI? O git push imprime um link para abrir o PR no navegador.'] },
+    ], tela: 'Check test em vermelho no PR. Clique em Details para ver o log com expected 200 to be 400.', dicas: ['Sem a GitHub CLI? O git push imprime um link para abrir o PR no navegador.'] },
     { t: 'Corrigir e exigir o check no merge', parts: [
       { kind: 'code', block: ['src/desconto.ts · versão corrigida', 'ts', NODE_FIX] },
       { kind: 'cmds', lang: 'sh', items: [
@@ -220,15 +256,15 @@ export function PY(repo: string): Track { return {
   id: 'py', wf: 'dados.yml', pasta: 'python', repo, pastaUrl: `https://${repo}/tree/main/python`, check: 'validar', run: PY_RUN,
   projetoIntro: 'O código lê um CSV de cupons e aplica o desconto. Quem edita o CSV é o comercial, direto no navegador. O código está certo; o dado, não.',
   tree: `python/
-├── .github/
-│   └── workflows/
-│       └── dados.yml
 ├── dados/
 │   └── cupons.csv
 ├── loja/
 │   └── cupons.py
 ├── tests/
 │   └── test_cupons.py
+├── passos/
+│   └── dados.yml
+├── pytest.ini
 └── requirements.txt`,
   files: [
     ['dados/cupons.csv', 'csv', `codigo,desconto,validade
