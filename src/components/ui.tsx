@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Check, Copy } from 'lucide-react';
-import type { Lang } from '../content';
+import type { Foto as FotoT, Lang } from '../content';
 import { Line } from '../highlight';
 import { cn } from '../cn';
 
@@ -106,5 +106,25 @@ export function Toggle({ open, onClick, children }: { open: boolean; onClick: ()
       </span>
       {children}
     </button>
+  );
+}
+
+/** Captura de tela real do GitHub, com legenda. Fica em public/fotos. */
+export function Foto({ foto }: { foto: FotoT }) {
+  return (
+    <figure className="space-y-2">
+      <a href={`${import.meta.env.BASE_URL}fotos/${foto.src}`} target="_blank" rel="noreferrer" className="block">
+        <img
+          src={`${import.meta.env.BASE_URL}fotos/${foto.src}`}
+          alt={foto.alt}
+          width={foto.w}
+          height={foto.h}
+          loading="lazy"
+          decoding="async"
+          className="h-auto w-full rounded-lg border border-ctp-surface-0 bg-white"
+        />
+      </a>
+      <figcaption className="text-sm text-ctp-subtext-0">{foto.legenda}</figcaption>
+    </figure>
   );
 }

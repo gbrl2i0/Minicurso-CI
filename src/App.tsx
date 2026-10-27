@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
-import { NODE, PY, REPO_NODE, REPO_PY } from './content';
+import { FOTOS, NODE, PY, REPO_NODE, REPO_PY } from './content';
 import { Line } from './highlight';
 import { cn } from './cn';
 import { useCopy, useStored } from './useCopy';
-import { CodeBlock, CopyButton, Section, Toggle } from './components/ui';
+import { CodeBlock, CopyButton, Foto, Section, Toggle } from './components/ui';
 import { CheckSimulation, WorkflowFile } from './components/Workflow';
 import Practice from './components/Practice';
 
@@ -14,7 +14,6 @@ const NAV = [
   ['testes', 'Testes'],
   ['workflow', 'Workflow'],
   ['roteiro', 'Roteiro'],
-  ['erros', 'Erros comuns'],
   ['alem', 'Para ir além'],
 ] as const;
 
@@ -32,13 +31,6 @@ const WORDS = [
   ['step', 'uma tarefa do job, em ordem: run: ou uses:'],
   ['action', 'step pronto que você reusa: actions/checkout@v4'],
   ['runner', 'a máquina que executa o job, uma VM limpa a cada run'],
-];
-
-const OTHERS = [
-  ['GitLab CI/CD', '.gitlab-ci.yml · stages em vez de jobs soltos'],
-  ['Jenkins', 'Jenkinsfile · self-hosted, o veterano'],
-  ['CircleCI', '.circleci/config.yml · orbs no lugar de actions'],
-  ['Bitbucket Pipelines', 'bitbucket-pipelines.yml'],
 ];
 
 const LINKS = [
@@ -102,7 +94,6 @@ function App() {
 
   const { copied, copy } = useCopy();
   const [showOut, setShowOut] = useState(false);
-  const [erro, setErro] = useState(0);
 
   const tracks = [
     { id: 'node' as const, name: 'Node.js · API', title: 'Testar código', text: 'Uma API Express em TypeScript com um bug de desconto. Vitest e Supertest pegam o preço negativo antes do merge.' },
@@ -218,6 +209,7 @@ function App() {
               </li>
             ))}
           </ol>
+          <Foto foto={FOTOS.commits} />
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-ctp-text">Seis palavras que se encaixam</h3>
             <dl className="divide-y divide-ctp-surface-0 border-y border-ctp-surface-0">
@@ -303,22 +295,8 @@ function App() {
           <Practice t={t} copied={copied} onCopy={copy} />
         </Section>
 
-        <Section id="erros" number="06" label="quando dá errado" title="Erros da primeira tentativa">
-          <ul className="divide-y divide-ctp-surface-0 border-y border-ctp-surface-0">
-            {t.erros.map(([title, text], i) => (
-              <li key={title} className="py-3">
-                <Toggle open={erro === i} onClick={() => setErro(erro === i ? -1 : i)}>
-                  <span className="text-[15px] text-ctp-text">{title}</span>
-                </Toggle>
-                {erro === i && <p className="mt-2 pl-7 text-[15px] leading-relaxed text-ctp-subtext-1">{text}</p>}
-              </li>
-            ))}
-          </ul>
-        </Section>
-
-        <Section id="alem" number="07" label="para ir além" title="O que mais cabe no pipeline">
+        <Section id="alem" number="06" label="para ir além" title="O que mais cabe no pipeline">
           <div className="space-y-3">
-            <h3 className="font-mono text-xs text-ctp-meta">Outros steps no mesmo job</h3>
             <ul className="divide-y divide-ctp-surface-0 overflow-hidden rounded-xl border border-ctp-surface-0">
               {t.alem.map(([name, cmd, text], i) => (
                 <li key={name} className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:gap-4">
@@ -334,26 +312,21 @@ function App() {
               ))}
             </ul>
           </div>
-          <div className="space-y-3">
-            <h3 className="font-mono text-xs text-ctp-meta">O mesmo conceito, outras casas</h3>
-            <dl className="divide-y divide-ctp-surface-0 border-y border-ctp-surface-0">
-              {OTHERS.map(([name, text]) => (
-                <div key={name} className="flex flex-col gap-1 py-3 sm:flex-row sm:gap-6">
-                  <dt className="w-44 shrink-0 font-medium text-ctp-text">{name}</dt>
-                  <dd className="font-mono text-[13px] text-ctp-subtext-0">{text}</dd>
-                </div>
-              ))}
-            </dl>
-            <p className="prose-text pt-2">
-              Muda a sintaxe do arquivo, não a ideia: um evento dispara steps numa máquina limpa e devolve verde ou vermelho.
-            </p>
-          </div>
         </Section>
       </main>
 
       <footer className="border-t border-ctp-surface-0">
         <div className="mx-auto flex max-w-[52rem] flex-wrap items-center justify-between gap-3 px-5 py-8 text-sm text-ctp-subtext-0 sm:px-8">
-          <span>Minicurso CI com GitHub Actions · Otávio Kessler Ustra</span>
+          <span>
+            Minicurso CI com GitHub Actions · Otávio Kessler Ustra
+            <span className="mt-1 block text-xs text-ctp-meta">
+              Capturas de tela:{' '}
+              <a href="https://docs.github.com" target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-ctp-text">
+                documentação do GitHub
+              </a>{' '}
+              (CC BY 4.0)
+            </span>
+          </span>
           <span className="flex gap-4">
             {LINKS.map(([label, href]) => (
               <a key={label} href={href} target="_blank" rel="noreferrer" className="transition-colors hover:text-ctp-text">

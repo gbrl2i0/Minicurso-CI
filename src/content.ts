@@ -9,6 +9,9 @@ export type Part =
   | { kind: 'code'; block: Block }
   | { kind: 'clicks'; items: string[] }
   | { kind: 'wf' };
+/** Captura de tela real do GitHub (em public/fotos). */
+export type Foto = { src: string; w: number; h: number; alt: string; legenda: string };
+export type Step = { t: string; parts: Part[]; tela: string; dicas: string[]; fotos?: Foto[] };
 export type Track = {
   id: 'node' | 'py';
   wf: string;
@@ -31,8 +34,7 @@ export type Track = {
   yml: [line: string, note: string][];
   logBug: string;
   logOk: string;
-  steps: { t: string; parts: Part[]; tela: string; dicas: string[] }[];
-  erros: [title: string, text: string][];
+  steps: Step[];
   alem: [name: string, cmd: string, text: string][];
 };
 
@@ -42,6 +44,54 @@ export const REPO_PY = REPO_NODE;
 
 export const NODE_RUN: Run = [['Set up job', 2], ['actions/checkout@v4', 1], ['actions/setup-node@v4', 4], ['npm ci', 12], ['npx tsc --noEmit', 6], ['npm test', 13]];
 export const PY_RUN: Run = [['Set up job', 2], ['actions/checkout@v4', 1], ['actions/setup-python@v5', 3], ['pip install -r requirements.txt', 8], ['pytest -q', 5]];
+
+// Capturas da documentação do GitHub (docs.github.com, licença CC BY 4.0).
+export const FOTOS = {
+  actions: { src: 'aba-actions.webp', w: 1400, h: 302, alt: 'Aba Actions do GitHub: a lista de workflows na lateral e um run verde na lista de runs', legenda: 'A aba Actions: os workflows na lateral, cada run na lista, com o check verde ou o X vermelho.' },
+  log: { src: 'log-do-job.webp', w: 1400, h: 995, alt: 'Log de um job do GitHub Actions com cada step marcado como concluído e o tempo de cada um', legenda: 'Clicando no job, cada step aparece com o tempo e o log. Um step vermelho mostra o erro aqui.' },
+  checks: { src: 'checks-do-pr.webp', w: 1272, h: 1120, alt: 'Pull request no GitHub com a aba Checks destacada e a lista de commits do PR', legenda: 'No PR, a aba Checks mostra cada job que rodou, commit por commit.' },
+  commits: { src: 'commits-com-status.webp', w: 703, h: 196, alt: 'Lista de commits no GitHub, com um X vermelho nos commits que reprovaram e um check verde no que passou', legenda: 'O feedback na prática: cada commit ganha um check verde ou um X vermelho.' },
+  settings: { src: 'aba-settings.webp', w: 1400, h: 138, alt: 'Barra de abas de um repositório no GitHub com a aba Settings destacada', legenda: 'Settings fica no fim da barra de abas e só aparece para quem administra o repositório.' },
+  merge: { src: 'botao-merge.webp', w: 934, h: 576, alt: 'Botão verde Merge pull request aberto, com as opções de merge commit, squash e rebase', legenda: 'Com o check verde, o botão Merge pull request volta a ficar verde.' },
+  runWorkflow: { src: 'run-workflow.webp', w: 1384, h: 584, alt: 'Página de um workflow na aba Actions com o botão Run workflow destacado', legenda: 'O botão Run workflow aparece porque o workflow tem workflow_dispatch.' },
+  editar: { src: 'editar-arquivo.webp', w: 1400, h: 446, alt: 'Arquivo aberto no GitHub com o ícone de lápis para editar destacado', legenda: 'O lápis abre o arquivo para editar ali mesmo, no navegador.' },
+} satisfies Record<string, Foto>;
+
+const RULESET = (check: string, extra?: string): Step => ({
+  t: 'Proteger a main com um ruleset',
+  parts: [
+    { kind: 'clicks', items: [
+      'No repositório: Settings → Rules → Rulesets',
+      'New ruleset → New branch ruleset',
+      'Ruleset Name: proteger-main · Enforcement status: Active',
+      'Target branches → Add target → Include default branch',
+      'Marque Require a pull request before merging',
+      `Marque Require status checks to pass → Add checks → ${check}`,
+      'Create',
+    ] },
+    { kind: 'cmds', lang: 'sh', items: [
+      ['git switch main', 'Volta para a main.'],
+      ['git pull', 'Traz o que já está no GitHub.'],
+      ['git commit --allow-empty -m "teste: push direto"', 'Um commit vazio, só para testar a regra.'],
+      ['git push', 'Tenta mandar direto para a main, sem PR.'],
+    ] },
+    { kind: 'code', block: ['terminal · o push é recusado', 'out', `remote: error: GH013: Repository rule violations found for refs/heads/main.
+remote: - Changes must be made through a pull request.
+remote: - Required status check "${check}" is expected.
+ ! [remote rejected] main -> main (push declined due to repository rule violations)`] },
+    { kind: 'cmds', lang: 'sh', items: [
+      ['git reset --hard origin/main', 'Descarta o commit de teste que não subiu.'],
+    ] },
+  ],
+  fotos: [FOTOS.settings],
+  tela: `O push direto é recusado com GH013. No PR, o botão de merge fica travado enquanto o check ${check} estiver vermelho.`,
+  dicas: [
+    'Em repositório privado no plano Free o ruleset não vale: use um repositório público.',
+    `O check ${check} só aparece no Add checks depois de ter rodado pelo menos uma vez.`,
+    'Deixe a Bypass list vazia: assim nem você, dono do repositório, passa por cima da regra.',
+    ...(extra ? [extra] : []),
+  ],
+});
 
 const NODE_FIX = `export function calcularPrecoFinal(
   valor: number,
@@ -176,7 +226,7 @@ describe("POST /calcular", () => {
     ['    branches: [main]', '...mas só na main. Protege a branch principal de quebrar sem ninguém ver.'],
     ['  pull_request:', 'Roda em todo PR aberto ou atualizado. É este resultado que vira o check do PR.'],
     ['jobs:', 'Os blocos de trabalho. Cada job roda numa máquina própria.'],
-    ['  test:', 'Id do job. Vira o nome do check no PR e é o que você exige na proteção da branch.'],
+    ['  test:', 'Id do job. Vira o nome do check no PR e é o que você exige no ruleset da main.'],
     ['    runs-on: ubuntu-latest', 'A máquina (runner). Uma VM Linux limpa, criada do zero a cada run.'],
     ['    steps:', 'Tarefas do job, executadas em ordem. Se uma falha, as seguintes não rodam.'],
     ['      - uses: actions/checkout@v4', 'A VM chega vazia. Este step baixa o código do repositório.'],
@@ -218,7 +268,7 @@ Error: Process completed with exit code 1`,
         ['git push', 'Envia para o GitHub. O push na main já dispara o primeiro run.'],
       ] },
       { kind: 'wf' },
-    ], tela: 'A aba Actions mostra o run CI começando sozinho, e ele fica vermelho, porque o bug ainda está na main.', dicas: ['YAML só aceita espaços, dois por nível. Nada de tab.', 'O GitHub só roda workflows que estão em .github/workflows na raiz do repositório. Use o conteúdo da pasta como raiz do seu repositório (copie para um repositório novo ou fork); dentro de uma subpasta, o workflow não aparece na aba Actions.'] },
+    ], fotos: [FOTOS.actions], tela: 'A aba Actions mostra o run CI começando sozinho, e ele fica vermelho, porque o bug ainda está na main.', dicas: ['YAML só aceita espaços, dois por nível. Nada de tab.', 'O GitHub só roda workflows que estão em .github/workflows na raiz do repositório. Use o conteúdo da pasta como raiz do seu repositório (copie para um repositório novo ou fork); dentro de uma subpasta, o workflow não aparece na aba Actions.'] },
     { t: 'Abrir o PR e ver o check vermelho', parts: [
       { kind: 'cmds', lang: 'sh', items: [
         ['git switch -c fix/desconto', 'Cria uma branch nova para o PR.'],
@@ -227,21 +277,17 @@ Error: Process completed with exit code 1`,
         ['git push -u origin fix/desconto', 'Sobe a branch para o GitHub.'],
         ['gh pr create --fill', 'Abre o PR pela GitHub CLI, usando a mensagem do commit.'],
       ] },
-    ], tela: 'Check test em vermelho no PR. Clique em Details para ver o log com expected 200 to be 400.', dicas: ['Sem a GitHub CLI? O git push imprime um link para abrir o PR no navegador.'] },
-    { t: 'Corrigir e exigir o check no merge', parts: [
+    ], fotos: [FOTOS.checks, FOTOS.log], tela: 'Check test em vermelho no PR. Clique em Details para ver o log com expected 200 to be 400.', dicas: ['Sem a GitHub CLI? O git push imprime um link para abrir o PR no navegador.'] },
+    RULESET('test'),
+    { t: 'Corrigir e fazer o merge', parts: [
       { kind: 'code', block: ['src/desconto.ts · versão corrigida', 'ts', NODE_FIX] },
       { kind: 'cmds', lang: 'sh', items: [
-        ['git commit -am "fix: limitar desconto a 100%"', 'Commita a correção na mesma branch.'],
+        ['git switch fix/desconto', 'Volta para a branch do PR. Troque o src/desconto.ts pela versão acima.'],
+        ['git commit -am "fix: limitar desconto a 100%"', 'Commita a correção na mesma branch do PR.'],
         ['git push', 'O workflow roda de novo sozinho, no mesmo PR.'],
       ] },
-      { kind: 'clicks', items: ['No GitHub: Settings → Branches → Add rule', 'Branch name pattern: main', 'Marque Require status checks to pass', 'Busque e selecione o check test'] },
-    ], tela: 'Check verde e merge liberado. Daqui em diante, um check vermelho desabilita o botão de merge.', dicas: ['O check só aparece na busca depois de ter rodado pelo menos uma vez.'] },
-  ],
-  erros: [
-    ['Tab no YAML', 'O YAML só aceita espaços, dois por nível. Um tab quebra o arquivo inteiro, e o workflow nem aparece na aba Actions.'],
-    ['Arquivo no lugar errado', 'Fora de .github/workflows/ nada roda e nada avisa. Confira o caminho, inclusive o ponto no começo de .github.'],
-    ['npm install no CI', 'Use npm ci. Ele instala exatamente o package-lock.json e falha se o lock estiver desatualizado; o install pode subir versões e mudar o resultado do teste.'],
-    ['Passa local, falha no CI', 'Quase sempre é versão diferente do Node ou lock desatualizado. Compare node -v com o node-version do workflow e rode npm ci local.'],
+      { kind: 'clicks', items: ['Espere o check test ficar verde', 'Clique em Merge pull request', 'Confirm merge'] },
+    ], fotos: [FOTOS.merge], tela: 'Check verde e merge liberado. Daqui em diante, nada entra na main sem PR e sem o check test verde.', dicas: ['Se o check ficar vermelho de novo, o botão de merge volta a travar sozinho.'] },
   ],
   alem: [
     ['ESLint + Prettier', 'npm run lint', 'estilo e erro bobo fora do review'],
@@ -326,7 +372,7 @@ FAILED tests/test_cupons.py::test_desconto_entre_1_e_100[BLACK150]
     ["    - cron: '0 12 * * *'", 'Todo dia às 12:00 UTC, que é 9h em Brasília. O schedule só roda na branch padrão.'],
     ['  workflow_dispatch:', 'Cria o botão Run workflow na aba Actions, para rodar na mão.'],
     ['jobs:', 'Os blocos de trabalho. Cada job roda numa máquina própria.'],
-    ['  validar:', 'Id do job. Vira o nome do check no PR e é o que você exige na proteção da branch.'],
+    ['  validar:', 'Id do job. Vira o nome do check no PR e é o que você exige no ruleset da main.'],
     ['    runs-on: ubuntu-latest', 'A máquina (runner). Uma VM Linux limpa, criada do zero a cada run.'],
     ['    steps:', 'Tarefas do job, executadas em ordem. Se uma falha, as seguintes não rodam.'],
     ['      - uses: actions/checkout@v4', 'A VM chega vazia. Este step baixa o código e o CSV.'],
@@ -365,23 +411,17 @@ Error: Process completed with exit code 1`,
       ] },
       { kind: 'wf' },
       { kind: 'clicks', items: ['Abra a aba Actions do repositório', 'Escolha o workflow Dados', 'Clique em Run workflow'] },
-    ], tela: 'Depois do push, nada roda: este workflow não escuta push. O Run workflow dispara o primeiro run, verde.', dicas: ['YAML só aceita espaços, dois por nível. Nada de tab.', 'O GitHub só roda workflows que estão em .github/workflows na raiz do repositório. Use o conteúdo da pasta como raiz do seu repositório (copie para um repositório novo ou fork); dentro de uma subpasta, o workflow não aparece na aba Actions.'] },
+    ], fotos: [FOTOS.runWorkflow], tela: 'Depois do push, nada roda: este workflow não escuta push. O Run workflow dispara o primeiro run, verde.', dicas: ['YAML só aceita espaços, dois por nível. Nada de tab.', 'O GitHub só roda workflows que estão em .github/workflows na raiz do repositório. Use o conteúdo da pasta como raiz do seu repositório (copie para um repositório novo ou fork); dentro de uma subpasta, o workflow não aparece na aba Actions.'] },
     { t: 'Editar o CSV no navegador e abrir o PR', parts: [
       { kind: 'clicks', items: ['No GitHub, abra dados/cupons.csv', 'Clique no lápis (Edit this file)', 'Cole a linha abaixo no fim do arquivo', 'Commit changes → Create a new branch', 'Propose changes → Create pull request'] },
       { kind: 'cmds', lang: 'csv', items: [['BLACK150,150,2026-11-28', 'Cupom de 150%: o erro proposital.']] },
-    ], tela: 'Check validar em vermelho, com [BLACK150] no nome do teste que falhou.', dicas: ['Ninguém abriu o terminal: é exatamente o caminho de quem não é dev.'] },
-    { t: 'Corrigir, exigir o check e rodar na mão', parts: [
+    ], fotos: [FOTOS.editar, FOTOS.checks], tela: 'Check validar em vermelho, com [BLACK150] no nome do teste que falhou.', dicas: ['Ninguém abriu o terminal: é exatamente o caminho de quem não é dev.'] },
+    RULESET('validar', 'Com paths e check obrigatório, PR que não toca em dados fica esperando o check para sempre. Em produção, tire o filtro ou use um job que sempre roda.'),
+    { t: 'Corrigir, fazer o merge e rodar na mão', parts: [
       { kind: 'clicks', items: ['No PR: Files changed → ⋯ → Edit file', 'Troque a linha do BLACK150 pela linha abaixo', 'Commit changes'] },
       { kind: 'cmds', lang: 'csv', items: [['BLACK50,50,2026-11-28', 'Desconto dentro do limite.']] },
-      { kind: 'clicks', items: ['Settings → Branches → Add rule', 'Marque Require status checks e selecione validar', 'Actions → Dados → Run workflow'] },
-    ], tela: 'Check verde e merge liberado. O Run workflow roda o mesmo job que o cron roda toda manhã.', dicas: ['Com paths e check obrigatório, PR que não toca em dados fica esperando o check para sempre. Em produção, tire o filtro ou use um job que sempre roda.'] },
-  ],
-  erros: [
-    ['Tab no YAML', 'O YAML só aceita espaços, dois por nível. Um tab quebra o arquivo inteiro, e o workflow nem aparece na aba Actions.'],
-    ['pytest fora do requirements.txt', 'Na sua máquina ele já estava instalado; no runner, não. Tudo que o CI usa precisa estar no requirements.txt.'],
-    ['Esperar o push disparar', 'Este workflow escuta pull_request, schedule e o botão. Push direto na main não roda nada.'],
-    ['Cron no horário errado', 'O schedule é em UTC e só roda na branch padrão. 12:00 UTC é 9h em Brasília. Em repositório sem atividade por 60 dias, o GitHub pausa o agendamento.'],
-    ['Check obrigatório que nunca chega', 'Com paths, PR que não mexe em dados não roda o job, e o check obrigatório fica esperando. Tire o filtro ou crie um job que sempre roda.'],
+      { kind: 'clicks', items: ['Espere o check validar ficar verde', 'Merge pull request → Confirm merge', 'Actions → Dados → Run workflow'] },
+    ], fotos: [FOTOS.merge], tela: 'Check verde e merge liberado. O Run workflow roda o mesmo job que o cron roda toda manhã.', dicas: ['Se o check ficar vermelho de novo, o botão de merge volta a travar sozinho.'] },
   ],
   alem: [
     ['Ruff', 'ruff check .', 'lint e formatação, muito rápido'],

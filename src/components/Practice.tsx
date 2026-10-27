@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Check, ExternalLink } from 'lucide-react';
+import { Check, ExternalLink, PartyPopper } from 'lucide-react';
 import type { Track } from '../content';
 import { Line } from '../highlight';
 import { cn } from '../cn';
-import { CodeBlock, CopyButton, Toggle } from './ui';
+import { confete } from '../confetti';
+import { CodeBlock, CopyButton, Foto, Toggle } from './ui';
 import { ymlText } from './Workflow';
 
 const DONE_KEY = 'ci-apoio-roteiro';
@@ -26,7 +27,14 @@ function Practice({ t, copied, onCopy }: Props) {
   const count = t.steps.filter((_, i) => done[`${t.id}-${i}`]).length;
   const pct = Math.round((count / t.steps.length) * 100);
 
-  function toggleDone(key: string) {
+  const allDone = count === t.steps.length;
+
+  function toggleDone(key: string, origem: HTMLElement) {
+    // Marcou o último passo que faltava: confete saindo da caixinha.
+    if (!done[key] && count === t.steps.length - 1) {
+      const r = origem.getBoundingClientRect();
+      confete(r.left + r.width / 2, r.top + r.height / 2);
+    }
     setDone((prev) => {
       const next = { ...prev, [key]: !prev[key] };
       try {
@@ -90,7 +98,7 @@ function Practice({ t, copied, onCopy }: Props) {
                   role="checkbox"
                   aria-checked={isDone}
                   aria-label={`Marcar o passo ${i + 1} como feito`}
-                  onClick={() => toggleDone(key)}
+                  onClick={(e) => toggleDone(key, e.currentTarget)}
                   className={cn(
                     'mt-0.5 grid size-5 shrink-0 cursor-pointer place-items-center rounded border transition-colors',
                     isDone ? 'border-ctp-green bg-ctp-green text-ctp-base' : 'border-ctp-surface-2 hover:border-ctp-accent'
@@ -174,6 +182,8 @@ function Practice({ t, copied, onCopy }: Props) {
                 );
               })}
 
+              {step.fotos?.map((foto) => <Foto key={foto.src} foto={foto} />)}
+
               <Toggle open={isOpen} onClick={() => setOpen((o) => ({ ...o, [key]: !o[key] }))}>
                 {isOpen ? 'Esconder detalhes' : 'Mostrar como faz'}
               </Toggle>
@@ -194,6 +204,20 @@ function Practice({ t, copied, onCopy }: Props) {
           );
         })}
       </ol>
+
+      <div role="status">
+        {allDone && (
+          <div className="flex items-start gap-3 rounded-xl border border-ctp-green/40 bg-ctp-mantle px-4 py-4">
+            <PartyPopper size={20} className="mt-0.5 shrink-0 text-ctp-green" aria-hidden="true" />
+            <div>
+              <p className="font-semibold text-ctp-text">Prática concluída!</p>
+              <p className="text-[15px] text-ctp-subtext-1">
+                Seu repositório tem CI, e a main só aceita código por PR com o check {t.check} verde.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
