@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { NODE, PY, REPO_NODE, REPO_PY } from './content';
 import { Line } from './highlight';
@@ -81,6 +81,25 @@ function App() {
     }
   };
 
+  // Seção que está na tela, para sublinhar o item do menu (a linha desce até a borda do header).
+  const [active, setActive] = useState<string | null>(null);
+  useEffect(() => {
+    const sections = NAV.map(([id]) => document.getElementById(id)).filter((el): el is HTMLElement => !!el);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) if (entry.isIntersecting) setActive(entry.target.id);
+      },
+      { rootMargin: '-25% 0px -65% 0px' }
+    );
+    sections.forEach((el) => observer.observe(el));
+    const top = () => scrollY < 200 && setActive(null);
+    addEventListener('scroll', top, { passive: true });
+    return () => {
+      observer.disconnect();
+      removeEventListener('scroll', top);
+    };
+  }, []);
+
   const { copied, copy } = useCopy();
   const [showOut, setShowOut] = useState(false);
   const [erro, setErro] = useState(0);
@@ -133,9 +152,14 @@ function App() {
             </button>
           </div>
         </div>
-        <nav aria-label="Seções" className="mx-auto hidden max-w-[52rem] gap-5 overflow-x-auto px-5 pb-2.5 text-sm sm:flex sm:px-8">
+        <nav aria-label="Seções" className="mx-auto hidden max-w-[52rem] gap-6 overflow-x-auto px-5 text-sm sm:flex sm:px-8">
           {NAV.map(([id, label]) => (
-            <a key={id} href={`#${id}`} className="whitespace-nowrap text-ctp-subtext-0 transition-colors hover:text-ctp-text">
+            <a
+              key={id}
+              href={`#${id}`}
+              aria-current={active === id ? 'true' : undefined}
+              className="nav-link relative whitespace-nowrap py-2.5 text-ctp-subtext-0 transition-colors hover:text-ctp-text aria-[current=true]:text-ctp-text"
+            >
               {label}
             </a>
           ))}
