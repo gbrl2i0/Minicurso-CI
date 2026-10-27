@@ -1,0 +1,148 @@
+@import 'tailwindcss';
+
+/* Paleta Catppuccin, como no portfólio (kessleru.com.br): Mocha no escuro e Latte em creme suave no claro. */
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+  --ctp-rosewater: #f5e0dc;
+  --ctp-pink: #f5c2e7;
+  --ctp-mauve: #cba6f7;
+  --ctp-red: #f38ba8;
+  --ctp-peach: #fab387;
+  --ctp-yellow: #f9e2af;
+  --ctp-green: #a6e3a1;
+  --ctp-teal: #94e2d5;
+  --ctp-sky: #89dceb;
+  --ctp-blue: #89b4fa;
+  --ctp-lavender: #b4befe;
+  --ctp-text: #cdd6f4;
+  --ctp-subtext-1: #bac2de;
+  --ctp-subtext-0: #a6adc8;
+  --ctp-meta: #9399b2;
+  --ctp-surface-2: #585b70;
+  --ctp-surface-1: #45475a;
+  --ctp-surface-0: #313244;
+  --ctp-base: #1e1e2e;
+  --ctp-mantle: #181825;
+  --ctp-crust: #11111b;
+  --ctp-accent: var(--ctp-green);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --ctp-rosewater: #dc8a78;
+  --ctp-pink: #ea76cb;
+  --ctp-mauve: #8839ef;
+  --ctp-red: #d20f39;
+  --ctp-peach: #fe640b;
+  --ctp-yellow: #df8e1d;
+  --ctp-green: #40a02b;
+  --ctp-teal: #179299;
+  --ctp-sky: #04a5e5;
+  --ctp-blue: #1e66f5;
+  --ctp-lavender: #7287fd;
+  --ctp-text: #4c4f69;
+  --ctp-subtext-1: #5c5f77;
+  --ctp-subtext-0: #5f627a;
+  --ctp-meta: #5f627a;
+  --ctp-surface-2: #c6c1b5;
+  --ctp-surface-1: #d8d4ca;
+  --ctp-surface-0: #e7e4dc;
+  --ctp-base: #f5f3ee;
+  --ctp-mantle: #fdfcf9;
+  --ctp-crust: #e9e6de;
+}
+
+@theme {
+  --color-ctp-pink: var(--ctp-pink);
+  --color-ctp-mauve: var(--ctp-mauve);
+  --color-ctp-red: var(--ctp-red);
+  --color-ctp-peach: var(--ctp-peach);
+  --color-ctp-yellow: var(--ctp-yellow);
+  --color-ctp-green: var(--ctp-green);
+  --color-ctp-teal: var(--ctp-teal);
+  --color-ctp-sky: var(--ctp-sky);
+  --color-ctp-blue: var(--ctp-blue);
+  --color-ctp-lavender: var(--ctp-lavender);
+  --color-ctp-text: var(--ctp-text);
+  --color-ctp-subtext-1: var(--ctp-subtext-1);
+  --color-ctp-subtext-0: var(--ctp-subtext-0);
+  --color-ctp-meta: var(--ctp-meta);
+  --color-ctp-surface-2: var(--ctp-surface-2);
+  --color-ctp-surface-1: var(--ctp-surface-1);
+  --color-ctp-surface-0: var(--ctp-surface-0);
+  --color-ctp-base: var(--ctp-base);
+  --color-ctp-mantle: var(--ctp-mantle);
+  --color-ctp-crust: var(--ctp-crust);
+  --color-ctp-accent: var(--ctp-accent);
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --font-mono:
+    'JetBrains Mono', ui-monospace, Menlo, 'DejaVu Sans Mono', monospace;
+}
+
+/* Texto corrido: 16–17px, altura de linha 1,7, no máximo ~65 caracteres por linha. */
+@utility prose-text {
+  font-size: 1rem;
+  line-height: 1.7;
+  max-width: 65ch;
+  color: var(--ctp-subtext-1);
+  text-wrap: pretty;
+
+  @media (min-width: 640px) {
+    font-size: 1.0625rem;
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    background: var(--ctp-base);
+    color: var(--ctp-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  a,
+  button {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button:not(:disabled):active {
+    scale: 0.97;
+  }
+
+  :focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--ctp-accent) 80%, transparent);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--ctp-accent) 40%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,11 @@
+# Minicurso CI
+
+Material de apoio do minicurso de CI do Otávio Kessler Ustra, servido em kessleru.com.br/ci
+(o portfólio, repo `kessleru/Portfolio-Kessleru`, repassa a rota para o deploy deste repo na Vercel).
+
+- `pnpm dev` / `pnpm build`. Vite com `base: '/ci/'`: não tire, senão os arquivos somem atrás do proxy.
+- Conteúdo das trilhas em `src/content.ts`; o resto é apresentação.
+- Visual igual à versão simples do portfólio: tokens Catppuccin (`text-ctp-*`), uma coluna,
+  `prose-text` em parágrafos, mono só em rótulos, código e datas. Textos em português do Brasil.
+- Commits em português (`tipo: descrição`), sem coautoria, autor
+  `Otávio Kessler Ustra <90390195+kessleru@users.noreply.github.com>`, direto na `main`.
