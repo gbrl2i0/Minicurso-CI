@@ -45,13 +45,17 @@ export const REPO_PY = REPO_NODE;
 export const NODE_RUN: Run = [['Set up job', 2], ['actions/checkout@v4', 1], ['actions/setup-node@v4', 4], ['npm ci', 12], ['npx tsc --noEmit', 6], ['npm test', 13]];
 export const PY_RUN: Run = [['Set up job', 2], ['actions/checkout@v4', 1], ['actions/setup-python@v5', 3], ['pip install -r requirements.txt', 8], ['pytest -q', 5]];
 
-// Capturas da documentação do GitHub (docs.github.com, licença CC BY 4.0).
+// Capturas reais: as do ruleset, do PR e do run são do repositório do minicurso;
+// as outras são da documentação do GitHub (docs.github.com, licença CC BY 4.0).
 export const FOTOS = {
   actions: { src: 'aba-actions.webp', w: 1400, h: 302, alt: 'Aba Actions do GitHub: a lista de workflows na lateral e um run verde na lista de runs', legenda: 'A aba Actions: os workflows na lateral, cada run na lista, com o check verde ou o X vermelho.' },
-  log: { src: 'log-do-job.webp', w: 1400, h: 995, alt: 'Log de um job do GitHub Actions com cada step marcado como concluído e o tempo de cada um', legenda: 'Clicando no job, cada step aparece com o tempo e o log. Um step vermelho mostra o erro aqui.' },
   checks: { src: 'checks-do-pr.webp', w: 1272, h: 1120, alt: 'Pull request no GitHub com a aba Checks destacada e a lista de commits do PR', legenda: 'No PR, a aba Checks mostra cada job que rodou, commit por commit.' },
   commits: { src: 'commits-com-status.webp', w: 703, h: 196, alt: 'Lista de commits no GitHub, com um X vermelho nos commits que reprovaram e um check verde no que passou', legenda: 'O feedback na prática: cada commit ganha um check verde ou um X vermelho.' },
-  settings: { src: 'aba-settings.webp', w: 1400, h: 138, alt: 'Barra de abas de um repositório no GitHub com a aba Settings destacada', legenda: 'Settings fica no fim da barra de abas e só aparece para quem administra o repositório.' },
+  rulesets: { src: 'rulesets-lista.webp', w: 1359, h: 230, alt: 'Página Rulesets nas configurações do repositório, com o botão verde New ruleset e um ruleset ativo na lista', legenda: 'Settings → Rulesets: o botão New ruleset fica no canto direito. Cada ruleset ativo aparece na lista.' },
+  rulesetForm: { src: 'ruleset-form.webp', w: 1126, h: 928, alt: 'Formulário do ruleset com o nome, Enforcement status Active, Bypass list vazia e o alvo Default, que aplica à main', legenda: 'Nome, Active, Bypass list vazia e o alvo Default: a regra vale para a main.' },
+  rulesetRegras: { src: 'ruleset-regras.webp', w: 1100, h: 545, alt: 'Lista de regras do ruleset com Require a pull request before merging e Require status checks to pass marcadas', legenda: 'As duas regras marcadas. O check obrigatório é escolhido em Show additional settings.' },
+  abrirPr: { src: 'abrir-pr.webp', w: 1040, h: 712, alt: 'Tela Open a pull request do GitHub, com base main, a branch de comparação e o botão Create pull request', legenda: 'Abrindo o PR: base main, a sua branch em compare, um título e Create pull request.' },
+  runVerde: { src: 'run-verde.webp', w: 1000, h: 712, alt: 'Run verde do workflow depois do merge do PR, com o job test e cada step concluído', legenda: 'Depois do merge, o workflow roda na main e o job test fica verde, step por step.' },
   merge: { src: 'botao-merge.webp', w: 934, h: 576, alt: 'Botão verde Merge pull request aberto, com as opções de merge commit, squash e rebase', legenda: 'Com o check verde, o botão Merge pull request volta a ficar verde.' },
   runWorkflow: { src: 'run-workflow.webp', w: 1384, h: 584, alt: 'Página de um workflow na aba Actions com o botão Run workflow destacado', legenda: 'O botão Run workflow aparece porque o workflow tem workflow_dispatch.' },
   editar: { src: 'editar-arquivo.webp', w: 1400, h: 446, alt: 'Arquivo aberto no GitHub com o ícone de lápis para editar destacado', legenda: 'O lápis abre o arquivo para editar ali mesmo, no navegador.' },
@@ -61,12 +65,12 @@ const RULESET = (check: string, extra?: string): Step => ({
   t: 'Proteger a main com um ruleset',
   parts: [
     { kind: 'clicks', items: [
-      'No repositório: Settings → Rules → Rulesets',
+      'No repositório: Settings → Rulesets (na lateral)',
       'New ruleset → New branch ruleset',
       'Ruleset Name: proteger-main · Enforcement status: Active',
       'Target branches → Add target → Include default branch',
       'Marque Require a pull request before merging',
-      `Marque Require status checks to pass → Add checks → ${check}`,
+      `Marque Require status checks to pass → Show additional settings → Add checks → ${check}`,
       'Create',
     ] },
     { kind: 'cmds', lang: 'sh', items: [
@@ -83,7 +87,7 @@ remote: - Required status check "${check}" is expected.
       ['git reset --hard origin/main', 'Descarta o commit de teste que não subiu.'],
     ] },
   ],
-  fotos: [FOTOS.settings],
+  fotos: [FOTOS.rulesets, FOTOS.rulesetForm, FOTOS.rulesetRegras],
   tela: `O push direto é recusado com GH013. No PR, o botão de merge fica travado enquanto o check ${check} estiver vermelho.`,
   dicas: [
     'Em repositório privado no plano Free o ruleset não vale: use um repositório público.',
@@ -277,7 +281,7 @@ Error: Process completed with exit code 1`,
         ['git push -u origin fix/desconto', 'Sobe a branch para o GitHub.'],
         ['gh pr create --fill', 'Abre o PR pela GitHub CLI, usando a mensagem do commit.'],
       ] },
-    ], fotos: [FOTOS.checks, FOTOS.log], tela: 'Check test em vermelho no PR. Clique em Details para ver o log com expected 200 to be 400.', dicas: ['Sem a GitHub CLI? O git push imprime um link para abrir o PR no navegador.'] },
+    ], fotos: [FOTOS.abrirPr, FOTOS.checks], tela: 'Check test em vermelho no PR. Clique em Details para ver o log com expected 200 to be 400.', dicas: ['Sem a GitHub CLI? O git push imprime um link para abrir o PR no navegador.'] },
     RULESET('test'),
     { t: 'Corrigir e fazer o merge', parts: [
       { kind: 'code', block: ['src/desconto.ts · versão corrigida', 'ts', NODE_FIX] },
@@ -287,7 +291,7 @@ Error: Process completed with exit code 1`,
         ['git push', 'O workflow roda de novo sozinho, no mesmo PR.'],
       ] },
       { kind: 'clicks', items: ['Espere o check test ficar verde', 'Clique em Merge pull request', 'Confirm merge'] },
-    ], fotos: [FOTOS.merge], tela: 'Check verde e merge liberado. Daqui em diante, nada entra na main sem PR e sem o check test verde.', dicas: ['Se o check ficar vermelho de novo, o botão de merge volta a travar sozinho.'] },
+    ], fotos: [FOTOS.merge, FOTOS.runVerde], tela: 'Check verde e merge liberado. Daqui em diante, nada entra na main sem PR e sem o check test verde.', dicas: ['Se o check ficar vermelho de novo, o botão de merge volta a travar sozinho.'] },
   ],
   alem: [
     ['ESLint + Prettier', 'npm run lint', 'estilo e erro bobo fora do review'],
@@ -415,7 +419,7 @@ Error: Process completed with exit code 1`,
     { t: 'Editar o CSV no navegador e abrir o PR', parts: [
       { kind: 'clicks', items: ['No GitHub, abra dados/cupons.csv', 'Clique no lápis (Edit this file)', 'Cole a linha abaixo no fim do arquivo', 'Commit changes → Create a new branch', 'Propose changes → Create pull request'] },
       { kind: 'cmds', lang: 'csv', items: [['BLACK150,150,2026-11-28', 'Cupom de 150%: o erro proposital.']] },
-    ], fotos: [FOTOS.editar, FOTOS.checks], tela: 'Check validar em vermelho, com [BLACK150] no nome do teste que falhou.', dicas: ['Ninguém abriu o terminal: é exatamente o caminho de quem não é dev.'] },
+    ], fotos: [FOTOS.editar, FOTOS.abrirPr, FOTOS.checks], tela: 'Check validar em vermelho, com [BLACK150] no nome do teste que falhou.', dicas: ['Ninguém abriu o terminal: é exatamente o caminho de quem não é dev.'] },
     RULESET('validar', 'Com paths e check obrigatório, PR que não toca em dados fica esperando o check para sempre. Em produção, tire o filtro ou use um job que sempre roda.'),
     { t: 'Corrigir, fazer o merge e rodar na mão', parts: [
       { kind: 'clicks', items: ['No PR: Files changed → ⋯ → Edit file', 'Troque a linha do BLACK150 pela linha abaixo', 'Commit changes'] },

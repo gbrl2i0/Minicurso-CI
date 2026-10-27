@@ -320,7 +320,7 @@ function App() {
           <span>
             Minicurso CI com GitHub Actions · Otávio Kessler Ustra
             <span className="mt-1 block text-xs text-ctp-meta">
-              Capturas de tela:{' '}
+              Parte das capturas de tela:{' '}
               <a href="https://docs.github.com" target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-ctp-text">
                 documentação do GitHub
               </a>{' '}
