@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
-import { FOTOS, NODE, PY, REPO_NODE, REPO_PY } from './content';
+import { NODE, PY, REPO_NODE, REPO_PY } from './content';
 import { Line } from './highlight';
 import { cn } from './cn';
 import { useCopy, useStored } from './useCopy';
-import { CodeBlock, CopyButton, Foto, Section, Toggle } from './components/ui';
+import { CodeBlock, CopyButton, Section, Toggle } from './components/ui';
 import { CheckSimulation, WorkflowFile } from './components/Workflow';
 import Practice from './components/Practice';
 
@@ -209,7 +209,6 @@ function App() {
               </li>
             ))}
           </ol>
-          <Foto foto={FOTOS.commits} />
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-ctp-text">Seis palavras que se encaixam</h3>
             <dl className="divide-y divide-ctp-surface-0 border-y border-ctp-surface-0">
@@ -317,16 +316,7 @@ function App() {
 
       <footer className="border-t border-ctp-surface-0">
         <div className="mx-auto flex max-w-[52rem] flex-wrap items-center justify-between gap-3 px-5 py-8 text-sm text-ctp-subtext-0 sm:px-8">
-          <span>
-            Minicurso CI com GitHub Actions · Otávio Kessler Ustra
-            <span className="mt-1 block text-xs text-ctp-meta">
-              Parte das capturas de tela:{' '}
-              <a href="https://docs.github.com" target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-ctp-text">
-                documentação do GitHub
-              </a>{' '}
-              (CC BY 4.0)
-            </span>
-          </span>
+          <span>Minicurso CI com GitHub Actions · Otávio Kessler Ustra</span>
           <span className="flex gap-4">
             {LINKS.map(([label, href]) => (
               <a key={label} href={href} target="_blank" rel="noreferrer" className="transition-colors hover:text-ctp-text">
